@@ -3,14 +3,19 @@ const app = express();
 const fs = require("fs");
 const path = require("path")
 
+const isProd = typeof process.env.NODE_ENV !== 'undefined' && (process.env.NODE_ENV === 'production')
+
 const indexHTML = (() => {
   // path always be relative to server.js file with this:
   return fs.readFileSync(path.resolve(__dirname,"./index.html"),"utf-8");
 })();
 
-app.use('/dist', express.static(path.resolve(__dirname,'./dist')))
-
-require("./build/dev-server")(app);
+if (isProd) {
+  app.use('/', express.static(path.resolve(__dirname,'./dist'))) // must be here :/
+} else {
+  app.use('/dist', express.static(path.resolve(__dirname,'./dist')))
+  require("./build/dev-server")(app);
+}
 
 app.get('*', (req, res) => {
   res.write(indexHTML)
